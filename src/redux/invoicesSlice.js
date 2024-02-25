@@ -12,11 +12,29 @@ const invoicesSlice = createSlice({
     },
     updateInvoice: (state, action) => {
       const index = state.findIndex(
-        (invoice) => invoice.id === action.payload.id
+        (invoice) => invoice.id.toString() === action.payload.id
       );
+      //console.log(index, "index")
       if (index !== -1) {
+        //console.log("updated invoide in slice", action.payload.updatedInvoice)
         state[index] = action.payload.updatedInvoice;
       }
+    },
+    updateInvoiceOnProductEdit: (state, action) => {
+      const updatedProductId = action.payload.id;
+      const updatedProductData = action.payload.updatedProductData;
+
+      // Iterate over invoices and update products if necessary
+      state.forEach(invoice => {
+        invoice.items.forEach(item => {
+          if (item.itemId.toString() === updatedProductId.toString()) {
+            // Update relevant properties of the item in the invoice
+            Object.keys(updatedProductData).forEach(key => {
+              item[key] = updatedProductData[key];
+            });
+          }
+        });
+      });
     },
   },
 });
@@ -25,6 +43,7 @@ export const {
   addInvoice,
   deleteInvoice,
   updateInvoice,
+  updateInvoiceOnProductEdit 
 } = invoicesSlice.actions;
 
 export const selectInvoiceList = (state) => state.invoices;

@@ -10,10 +10,12 @@ import InvoiceModal from "./InvoiceModal";
 import { BiArrowBack } from "react-icons/bi";
 import InputGroup from "react-bootstrap/InputGroup";
 import { useDispatch } from "react-redux";
-import { addInvoice, updateInvoice } from "../redux/invoicesSlice";
+import { addInvoice, updateInvoice, updateInvoiceOnProductEdit } from "../redux/invoicesSlice";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import generateRandomId from "../utils/generateRandomId";
-import { useInvoiceListData } from "../redux/hooks";
+import { useInvoiceListData, useProduct } from "../redux/hooks";
+import ProductItem from "./ProductItem";
+import { addProduct, deleteProduct, updateProduct } from "../redux/productSlice";
 
 const InvoiceForm = () => {
   const dispatch = useDispatch();
@@ -26,6 +28,29 @@ const InvoiceForm = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [copyId, setCopyId] = useState("");
   const { getOneInvoice, listSize } = useInvoiceListData();
+  const { productList } = useProduct();
+  const [products, setProducts] = useState(() => {
+    if (isEdit) {
+      const invoiceItemIds = getOneInvoice(params.id).items.map((item) => item?.itemId);
+      return [...productList.filter((product) => !invoiceItemIds.includes(product?.itemId)), {
+        itemId: (+new Date() + Math.floor(Math.random() * 999999)).toString(36),
+        itemName: "",
+        itemDescription: "",
+        itemPrice: "1.00",
+        itemQuantity: 1,
+        itemGroup: "Labor",
+      }];
+    } else {
+      return [...productList, {
+        itemId: (+new Date() + Math.floor(Math.random() * 999999)).toString(36),
+        itemName: "",
+        itemDescription: "",
+        itemPrice: "1.00",
+        itemQuantity: 1,
+        itemGroup: "Labor",
+      }];
+    }
+  });
   const [formData, setFormData] = useState(
     isEdit
       ? getOneInvoice(params.id)
@@ -76,7 +101,19 @@ const InvoiceForm = () => {
     );
     setFormData({ ...formData, items: updatedItems });
     handleCalculateTotal();
+
+    const removedItem = productList.filter((p) => p.itemId === itemToDelete.itemId);
+
+    if(removedItem.length > 0){
+      setProducts([removedItem[0], ...products])
+    }
   };
+
+  const handleDelProduct = (productId) => {
+    dispatch(deleteProduct(productId));
+    const updatedProds = products.filter((p) => p.itemId !== productId);
+    setProducts(updatedProds);
+  }
 
   const handleAddEvent = () => {
     const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
@@ -93,6 +130,42 @@ const InvoiceForm = () => {
     });
     handleCalculateTotal();
   };
+
+  const handleAddToItem = (prod) => {
+    setFormData({
+      ...formData,
+      items: [prod, ...formData.items]
+    })
+
+    //console.log("products before updating: ", products)
+
+    const updatedProds = products.filter((p) => p.itemId !== prod.itemId);
+    //console.log(updatedProds, "updated products");
+    setProducts(updatedProds);
+    handleCalculateTotal();
+  }
+
+  const handleAddProduct = () => {
+    const lastProd = products[products.length - 1];
+    if(lastProd.itemName === "" || lastProd.itemDescription === ""){
+      alert("Product Name or Description cannot be empty!!!");
+      return;
+    }
+    const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+    const newItem = {
+      itemId: id,
+      itemName: "",
+      itemDescription: "",
+      itemPrice: "1.00",
+      itemQuantity: 1,
+      itemGroup: "Labor",
+    };
+    //console.log("product added", newItem)
+    const updatedProducts = [...products, newItem]
+    setProducts(updatedProducts)
+    dispatch(addProduct(updatedProducts[updatedProducts.length - 2]));
+    handleCalculateTotal();
+  }
 
   const handleCalculateTotal = () => {
     setFormData((prevFormData) => {
@@ -134,8 +207,38 @@ const InvoiceForm = () => {
     });
 
     setFormData({ ...formData, items: updatedItems });
+    //console.log(productList, "product list")
+    const isProduct = productList.findIndex((p) => p?.itemId.toString() === id);
+    //console.log(isProduct, "isproduct while editeng")
+    if(isProduct !== -1){
+      let updatedProduct = formData.items.filter((data) => data.itemId === id);
+      //console.log(updatedProduct, "before manipulation updated product");
+      updatedProduct = {...updatedProduct[0], [evt.target.name]: evt.target.value}
+      //console.log(updatedProduct, "updatedProduct");
+      dispatch(updateProduct({ id: id, updatedProd: updatedProduct }))
+    }
     handleCalculateTotal();
   };
+
+  const onProductizedItemEdit = (evt, id) => {
+    console.log("updating product item", evt.target.name, evt.target.value)
+    let updatedProd;
+    const updatedProducts = products.map((p) => {
+      if(p?.itemId === id){
+        updatedProd = {
+          ...p,
+          [evt.target.name]: evt.target.value
+        }
+        return updatedProd
+      }
+      return p
+    })
+    console.log(id, updatedProd, "updated prod")
+    setProducts(updatedProducts)
+    handleCalculateTotal();
+    dispatch(updateProduct({id, updatedProd}))
+    dispatch(updateInvoiceOnProductEdit({id, updatedProductData: updatedProd}))
+  }
 
   const editField = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -158,6 +261,7 @@ const InvoiceForm = () => {
 
   const handleAddInvoice = () => {
     if (isEdit) {
+      //console.log(formData, "is edit form data", params.id)
       dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
       alert("Invoice updated successfuly 🥳");
     } else if (isCopy) {
@@ -301,6 +405,14 @@ const InvoiceForm = () => {
                 />
               </Col>
             </Row>
+            <ProductItem
+                onItemizedItemEdit={onProductizedItemEdit}
+                onProductAdd={handleAddProduct}
+                onProductDel={handleDelProduct}
+                addToItem={handleAddToItem}
+                currency={formData.currency}
+                products={products}
+            />
             <InvoiceItem
               onItemizedItemEdit={onItemizedItemEdit}
               onRowAdd={handleAddEvent}
