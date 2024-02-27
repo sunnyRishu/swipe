@@ -14,21 +14,20 @@ const invoicesSlice = createSlice({
       const index = state.findIndex(
         (invoice) => invoice.id.toString() === action.payload.id
       );
-      //console.log(index, "index")
       if (index !== -1) {
-        //console.log("updated invoide in slice", action.payload.updatedInvoice)
         state[index] = action.payload.updatedInvoice;
       }
     },
+    // updating the redux state for invoice whenever the products are getting updated
     updateInvoiceOnProductEdit: (state, action) => {
       const updatedProductId = action.payload.id;
       const updatedProductData = action.payload.updatedProductData;
 
-      // Iterate over invoices and update products if necessary
+      // Iterating over invoices and updating products if necessary
       state.forEach(invoice => {
         invoice.items.forEach(item => {
           if (item.itemId.toString() === updatedProductId.toString()) {
-            // Update relevant properties of the item in the invoice
+            // Updating relevant properties of the item in the invoice
             Object.keys(updatedProductData).forEach(key => {
               item[key] = updatedProductData[key];
             });
@@ -36,6 +35,7 @@ const invoicesSlice = createSlice({
         });
       });
     },
+    // updating the redux state for invoice whenever the products are getting deleted
     updateInvoiceOnProductDelete: (state, action) => {
       const deletedProductId = action.payload;
 
