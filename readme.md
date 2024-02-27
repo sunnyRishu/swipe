@@ -1,9 +1,15 @@
+# Demo
+
+https://github.com/sunnyRishu/swipe/assets/155797653/fb1a8fa3-3445-4838-867c-c57de586317e
+
 # Assumptions
 
 ## Products
 1. Products Data Structure:
    - Products are similar to items in terms of data structure.
-   - Below is the comparison between the item and product data structures:
+   - Below is the comparison between the item and product data
+
+ structures:
         
         ```
         Item:
