@@ -29,38 +29,36 @@ const InvoiceForm = () => {
   const [copyId, setCopyId] = useState("");
   const { getOneInvoice, listSize } = useInvoiceListData();
   const { productList } = useProduct();
+
+  const generateRandomItemId = () => (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+  const defaultProduct = {
+    itemId: generateRandomItemId(),
+    itemName: "",
+    itemDescription: "",
+    itemPrice: "1.00",
+    itemQuantity: 1,
+    itemGroup: "Labor",
+  };
+
   const [products, setProducts] = useState(() => {
     if (isEdit) {
       const invoiceItemIds = getOneInvoice(params.id).items.map((item) => item?.itemId);
-      return [...productList.filter((product) => !invoiceItemIds.includes(product?.itemId)), {
-        itemId: (+new Date() + Math.floor(Math.random() * 999999)).toString(36),
-        itemName: "",
-        itemDescription: "",
-        itemPrice: "1.00",
-        itemQuantity: 1,
-        itemGroup: "Labor",
-      }];
+      const newProducts = productList.filter((product) => !invoiceItemIds.includes(product?.itemId));
+      return [...newProducts, defaultProduct];
     } else {
-      return [...productList, {
-        itemId: (+new Date() + Math.floor(Math.random() * 999999)).toString(36),
-        itemName: "",
-        itemDescription: "",
-        itemPrice: "1.00",
-        itemQuantity: 1,
-        itemGroup: "Labor",
-      }];
+      return [...productList, defaultProduct];
     }
   });
   const [formData, setFormData] = useState(
     isEdit
       ? getOneInvoice(params.id)
       : isCopy && params.id
-      ? {
+        ? {
           ...getOneInvoice(params.id),
           id: generateRandomId(),
           invoiceNumber: listSize + 1,
         }
-      : {
+        : {
           id: generateRandomId(),
           currentDate: new Date().toLocaleDateString(),
           invoiceNumber: listSize + 1,
@@ -104,7 +102,7 @@ const InvoiceForm = () => {
 
     const removedItem = productList.filter((p) => p.itemId === itemToDelete.itemId);
 
-    if(removedItem.length > 0){
+    if (removedItem.length > 0) {
       setProducts([removedItem[0], ...products])
     }
   };
@@ -116,7 +114,7 @@ const InvoiceForm = () => {
   }
 
   const handleAddEvent = () => {
-    const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+    const id = generateRandomItemId();
     const newItem = {
       itemId: id,
       itemName: "",
@@ -137,30 +135,18 @@ const InvoiceForm = () => {
       items: [prod, ...formData.items]
     })
 
-    //console.log("products before updating: ", products)
-
     const updatedProds = products.filter((p) => p.itemId !== prod.itemId);
-    //console.log(updatedProds, "updated products");
     setProducts(updatedProds);
     handleCalculateTotal();
   }
 
   const handleAddProduct = () => {
     const lastProd = products[products.length - 1];
-    if(lastProd.itemName === "" || lastProd.itemDescription === ""){
+    if (lastProd.itemName === "" || lastProd.itemDescription === "") {
       alert("Product Name or Description cannot be empty!!!");
       return;
     }
-    const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
-    const newItem = {
-      itemId: id,
-      itemName: "",
-      itemDescription: "",
-      itemPrice: "1.00",
-      itemQuantity: 1,
-      itemGroup: "Labor",
-    };
-    //console.log("product added", newItem)
+    const newItem = defaultProduct;
     const updatedProducts = [...products, newItem]
     setProducts(updatedProducts)
     dispatch(addProduct(updatedProducts[updatedProducts.length - 2]));
@@ -207,24 +193,21 @@ const InvoiceForm = () => {
     });
 
     setFormData({ ...formData, items: updatedItems });
-    //console.log(productList, "product list")
+
     const isProduct = productList.findIndex((p) => p?.itemId.toString() === id);
-    //console.log(isProduct, "isproduct while editeng")
-    if(isProduct !== -1){
+
+    if (isProduct !== -1) {
       let updatedProduct = formData.items.filter((data) => data.itemId === id);
-      //console.log(updatedProduct, "before manipulation updated product");
-      updatedProduct = {...updatedProduct[0], [evt.target.name]: evt.target.value}
-      //console.log(updatedProduct, "updatedProduct");
+      updatedProduct = { ...updatedProduct[0], [evt.target.name]: evt.target.value }
       dispatch(updateProduct({ id: id, updatedProd: updatedProduct }))
     }
     handleCalculateTotal();
   };
 
   const onProductizedItemEdit = (evt, id) => {
-    console.log("updating product item", evt.target.name, evt.target.value)
     let updatedProd;
     const updatedProducts = products.map((p) => {
-      if(p?.itemId === id){
+      if (p?.itemId === id) {
         updatedProd = {
           ...p,
           [evt.target.name]: evt.target.value
@@ -233,11 +216,10 @@ const InvoiceForm = () => {
       }
       return p
     })
-    console.log(id, updatedProd, "updated prod")
     setProducts(updatedProducts)
     handleCalculateTotal();
-    dispatch(updateProduct({id, updatedProd}))
-    dispatch(updateInvoiceOnProductEdit({id, updatedProductData: updatedProd}))
+    dispatch(updateProduct({ id, updatedProd }))
+    dispatch(updateInvoiceOnProductEdit({ id, updatedProductData: updatedProd }))
   }
 
   const editField = (name, value) => {
@@ -261,7 +243,6 @@ const InvoiceForm = () => {
 
   const handleAddInvoice = () => {
     if (isEdit) {
-      //console.log(formData, "is edit form data", params.id)
       dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
       alert("Invoice updated successfuly 🥳");
     } else if (isCopy) {
@@ -406,12 +387,12 @@ const InvoiceForm = () => {
               </Col>
             </Row>
             <ProductItem
-                onItemizedItemEdit={onProductizedItemEdit}
-                onProductAdd={handleAddProduct}
-                onProductDel={handleDelProduct}
-                addToItem={handleAddToItem}
-                currency={formData.currency}
-                products={products}
+              onItemizedItemEdit={onProductizedItemEdit}
+              onProductAdd={handleAddProduct}
+              onProductDel={handleDelProduct}
+              addToItem={handleAddToItem}
+              currency={formData.currency}
+              products={products}
             />
             <InvoiceItem
               onItemizedItemEdit={onItemizedItemEdit}

@@ -43,112 +43,105 @@ const ProductItem = (props) => {
   );
 };
 
-const ItemRow = (props) => {
-  const onDelEvent = () => {
-    props.onDelEvent(props?.item?.itemId);
+const ItemRow = ({ item, onDelEvent, addToItem, isLastProd, onItemizedItemEdit, currency }) => {
+  const handleDelete = () => {
+    onDelEvent(item?.itemId);
   };
 
-  const addToItem = () => {
-    props.addToItem(props?.item)
+  const handleAddToItem = () => {
+    addToItem(item)
   }
 
-  //console.log(props?.item?.itemId, "props item id")
+  const handleEdit = (evt) => {
+    onItemizedItemEdit(evt, item?.itemId)
+  }
+
   return (
     <tr>
       <td style={{ width: "100%" }}>
         <EditableField
-          onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props?.item?.itemId)
-          }
+          onItemizedItemEdit={handleEdit}
           cellData={{
             type: "text",
             name: "itemName",
             placeholder: "Item name",
-            value: props?.item?.itemName,
-            id: props?.item?.itemId,
+            value: item?.itemName,
+            id: item?.itemId,
           }}
         />
         <EditableField
-          onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props?.item?.itemId)
-          }
+          onItemizedItemEdit={handleEdit}
           cellData={{
             type: "text",
             name: "itemDescription",
             placeholder: "Item description",
-            value: props?.item?.itemDescription,
-            id: props?.item?.itemId,
+            value: item?.itemDescription,
+            id: item?.itemId,
           }}
         />
         <Form.Group className="">
-            <Form.Label className="fw-bold">Choose Group: </Form.Label>
-            <Form.Select
-              name="itemGroup"
-              onChange={(evt) =>
-                props.onItemizedItemEdit(evt, props?.item?.itemId)
-              }
-              value={props?.item?.itemGroup}
-              className="btn btn-light my-1 py-1"
-              aria-label="Change Group"
-            >
-              {
-                groups.map((group, index) => {
-                  return <option key={index} value={group}>{group}</option>
-                })
-              }
-            </Form.Select>
-          </Form.Group>
+          <Form.Label className="fw-bold">Choose Group: </Form.Label>
+          <Form.Select
+            name="itemGroup"
+            onChange={handleEdit}
+            value={item?.itemGroup}
+            className="btn btn-light my-1 py-1"
+            aria-label="Change Group"
+          >
+            {groups.map((group, index) => {
+              return (
+                <option key={index} value={group}>
+                  {group}
+                </option>
+              );
+            })}
+          </Form.Select>
+        </Form.Group>
       </td>
       <td style={{ minWidth: "70px" }}>
         <EditableField
-          onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props?.item?.itemId)
-          }
+          onItemizedItemEdit={handleEdit}
           cellData={{
             type: "number",
             name: "itemQuantity",
             min: 1,
             step: "1",
-            value: props?.item?.itemQuantity,
-            id: props?.item?.itemId,
+            value: item?.itemQuantity,
+            id: item?.itemId,
           }}
         />
       </td>
       <td style={{ minWidth: "130px" }}>
         <EditableField
-          onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props?.item?.itemId)
-          }
+          onItemizedItemEdit={handleEdit}
           cellData={{
-            leading: props.currency,
+            leading: currency,
             type: "number",
             name: "itemPrice",
             min: 1,
             step: "0.01",
             presicion: 2,
             textAlign: "text-end",
-            value: props?.item?.itemPrice,
-            id: props?.item?.itemId,
+            value: item?.itemPrice,
+            id: item?.itemId,
           }}
         />
       </td>
       <td className="text-center" style={{ minWidth: "50px" }}>
         <BiTrash
-          onClick={onDelEvent}
+          onClick={handleDelete}
           style={{ height: "33px", width: "33px", padding: "7.5px" }}
           className="text-white mt-1 btn btn-danger"
         />
-        {
-        !props.isLastProd && (
+        {!isLastProd && (
           <td className="text-center" style={{ minWidth: "50px" }}>
             <MdAddToQueue
-              onClick={addToItem}
+              onClick={handleAddToItem}
               style={{ height: "33px", width: "33px", padding: "7.5px" }}
               className="mt-1 btn btn-success"
             />
           </td>
-        )
-      }
+        )}
       </td>
     </tr>
   );

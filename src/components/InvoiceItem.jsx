@@ -11,10 +11,7 @@ const InvoiceItem = ({ onItemizedItemEdit, currency, onRowDel, items, onRowAdd }
     const grouped = {};
     items.forEach((item) => {
       const group = item.itemGroup || "Miscellaneous";
-      if (!grouped[group]) {
-        grouped[group] = [];
-      }
-      grouped[group].push(item);
+      grouped[group] = [...(grouped[group] || []), item];
     });
     setGroupedItems(grouped);
   }, [items]);
