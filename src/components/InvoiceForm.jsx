@@ -10,7 +10,7 @@ import InvoiceModal from "./InvoiceModal";
 import { BiArrowBack } from "react-icons/bi";
 import InputGroup from "react-bootstrap/InputGroup";
 import { useDispatch } from "react-redux";
-import { addInvoice, updateInvoice, updateInvoiceOnProductEdit } from "../redux/invoicesSlice";
+import { addInvoice, updateInvoice, updateInvoiceOnProductEdit, updateInvoiceOnProductDelete } from "../redux/invoicesSlice";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import generateRandomId from "../utils/generateRandomId";
 import { useInvoiceListData, useProduct } from "../redux/hooks";
@@ -41,7 +41,7 @@ const InvoiceForm = () => {
   };
 
   const [products, setProducts] = useState(() => {
-    if (isEdit) {
+    if (isEdit || (isCopy && params.id)) {
       const invoiceItemIds = getOneInvoice(params.id).items.map((item) => item?.itemId);
       const newProducts = productList.filter((product) => !invoiceItemIds.includes(product?.itemId));
       return [...newProducts, defaultProduct];
@@ -109,6 +109,7 @@ const InvoiceForm = () => {
 
   const handleDelProduct = (productId) => {
     dispatch(deleteProduct(productId));
+    dispatch(updateInvoiceOnProductDelete(productId));
     const updatedProds = products.filter((p) => p.itemId !== productId);
     setProducts(updatedProds);
   }

@@ -25,10 +25,11 @@ const ProductItem = (props) => {
 
   return (
     <div className="pb-5">
+      <h5  className="fw-bold">Products</h5>
       <Table>
         <thead>
           <tr>
-            <th>Products</th>
+            <th>Product</th>
             <th>QTY</th>
             <th>PRICE/RATE</th>
             <th className="text-center">ACTION</th>
@@ -80,7 +81,7 @@ const ItemRow = ({ item, onDelEvent, addToItem, isLastProd, onItemizedItemEdit, 
           }}
         />
         <Form.Group className="">
-          <Form.Label className="fw-bold">Choose Group: </Form.Label>
+          <Form.Label className="fw-bold mb-0">Choose Group: </Form.Label>
           <Form.Select
             name="itemGroup"
             onChange={handleEdit}
@@ -128,16 +129,21 @@ const ItemRow = ({ item, onDelEvent, addToItem, isLastProd, onItemizedItemEdit, 
         />
       </td>
       <td className="text-center" style={{ minWidth: "50px" }}>
-        <BiTrash
-          onClick={handleDelete}
-          style={{ height: "33px", width: "33px", padding: "7.5px" }}
-          className="text-white mt-1 btn btn-danger"
-        />
+        {
+          // Doesn't make sense to delete otherwise we won't be able to add products
+          !isLastProd && (
+            <BiTrash
+              onClick={handleDelete}
+              style={{ height: "33px", width: "33px", padding: "7.5px" }}
+              className="text-white mt-1 btn btn-danger"
+            />
+          )
+        }
         {!isLastProd && (
           <td className="text-center" style={{ minWidth: "50px" }}>
             <MdAddToQueue
               onClick={handleAddToItem}
-              style={{ height: "33px", width: "33px", padding: "7.5px" }}
+              style={{ height: "33px", width: "33px", padding: "7.5px", backgroundColor: "#0d6efd" }}
               className="mt-1 btn btn-success"
             />
           </td>

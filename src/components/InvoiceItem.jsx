@@ -3,6 +3,7 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import { BiTrash } from "react-icons/bi";
 import EditableField from "./EditableField";
+import groups from "../utils/constant";
 
 const InvoiceItem = ({ onItemizedItemEdit, currency, onRowDel, items, onRowAdd }) => {
   const [groupedItems, setGroupedItems] = useState({});
@@ -13,7 +14,16 @@ const InvoiceItem = ({ onItemizedItemEdit, currency, onRowDel, items, onRowAdd }
       const group = item.itemGroup || "Miscellaneous";
       grouped[group] = [...(grouped[group] || []), item];
     });
-    setGroupedItems(grouped);
+
+    // Arrange groups according to the defined order
+    const sortedGrouped = {};
+    [...groups, "Miscellaneous"].forEach((group) => {
+      if (grouped[group]) {
+        sortedGrouped[group] = grouped[group];
+      }
+    });
+
+    setGroupedItems(sortedGrouped);
   }, [items]);
 
   const handleDelete = (item) => {
@@ -24,7 +34,7 @@ const InvoiceItem = ({ onItemizedItemEdit, currency, onRowDel, items, onRowAdd }
     <div>
       {Object.entries(groupedItems).map(([group, groupItems]) => (
         <div key={group}>
-          <h6>{group}</h6>
+        <h5  className="fw-bold">{group}</h5>
           <Table>
             <thead>
               <tr>

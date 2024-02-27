@@ -36,6 +36,13 @@ const invoicesSlice = createSlice({
         });
       });
     },
+    updateInvoiceOnProductDelete: (state, action) => {
+      const deletedProductId = action.payload;
+
+      state.forEach(invoice => {
+        invoice.items = invoice?.items.filter(item => item?.itemId !== deletedProductId);
+      });
+    },
   },
 });
 
@@ -43,7 +50,8 @@ export const {
   addInvoice,
   deleteInvoice,
   updateInvoice,
-  updateInvoiceOnProductEdit 
+  updateInvoiceOnProductEdit,
+  updateInvoiceOnProductDelete,
 } = invoicesSlice.actions;
 
 export const selectInvoiceList = (state) => state.invoices;
