@@ -201,6 +201,7 @@ const InvoiceForm = () => {
       let updatedProduct = formData.items.filter((data) => data.itemId === id);
       updatedProduct = { ...updatedProduct[0], [evt.target.name]: evt.target.value }
       dispatch(updateProduct({ id: id, updatedProd: updatedProduct }))
+      dispatch(updateInvoiceOnProductEdit({ id, updatedProductData: updatedProduct}));
     }
     handleCalculateTotal();
   };
